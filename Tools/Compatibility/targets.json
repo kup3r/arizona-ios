@@ -1,0 +1,6 @@
+[
+  {"ip":"mobile1.arizona-rp.com","port":5125,"kind":"mobile"},
+  {"ip":"mobile2.arizona-rp.com","port":5125,"kind":"mobile"},
+  {"ip":"mobile3.arizona-rp.com","port":5125,"kind":"mobile"},
+  {"ip":"prescott.arizona-rp.com","port":7777,"kind":"pc_control"}
+]
