@@ -3,7 +3,19 @@ name: iOS build and simulator check
 on:
   push:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Resources/**'
+      - 'Tests/**'
+      - 'project.yml'
+      - '.github/workflows/ios.yml'
   pull_request:
+    paths:
+      - 'Sources/**'
+      - 'Resources/**'
+      - 'Tests/**'
+      - 'project.yml'
+      - '.github/workflows/ios.yml'
   workflow_dispatch:
 
 permissions:
