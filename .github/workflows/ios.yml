@@ -48,8 +48,18 @@ jobs:
             build/package/Payload/ArizonaResourceLab.app
           ditto -c -k --keepParent build/package/Payload build/ArizonaResourceLab-unsigned.ipa
 
+      - name: Upload unsigned iPhone package
+        if: ${{ !cancelled() && hashFiles('build/ArizonaResourceLab-unsigned.ipa') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: iPhone-unsigned-${{ github.sha }}
+          path: build/ArizonaResourceLab-unsigned.ipa
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Select iPhone simulator
         id: simulator
+        timeout-minutes: 5
         run: |
           xcrun simctl list devices available -j > build/simulators.json
           DEVICE_ID=$(python3 - <<'PY'
@@ -65,9 +75,10 @@ jobs:
           )
           echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
           xcrun simctl boot "$DEVICE_ID"
-          xcrun simctl bootstatus "$DEVICE_ID" -b
+          xcrun simctl bootstatus "$DEVICE_ID" -b 2>&1 | tee build/simulator-boot.log
 
       - name: Build and test in iPhone simulator
+        timeout-minutes: 8
         run: |
           xcodebuild -project ArizonaResourceLab.xcodeproj \
             -scheme ArizonaResourceLab -configuration Debug \
@@ -79,20 +90,12 @@ jobs:
 
       - name: Export simulator screenshots
         if: always()
+        timeout-minutes: 2
         run: |
           if [ -d build/UITests.xcresult ]; then
             xcrun xcresulttool export attachments --path build/UITests.xcresult \
               --output-path build/screenshots
           fi
-
-      - name: Upload unsigned iPhone package
-        if: ${{ !cancelled() && hashFiles('build/ArizonaResourceLab-unsigned.ipa') != '' }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: iPhone-unsigned-${{ github.sha }}
-          path: build/ArizonaResourceLab-unsigned.ipa
-          retention-days: 7
-          if-no-files-found: error
 
       - name: Upload build logs and simulator results
         if: always()
