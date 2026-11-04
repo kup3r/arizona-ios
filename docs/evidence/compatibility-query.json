@@ -1,0 +1,94 @@
+{
+  "utc": "2026-11-04T15:05:01.891139+00:00",
+  "method": "One i, r and p UDP query per APK-listed host; no retries/login/RCON/client list",
+  "results": [
+    {
+      "host": "mobile1.arizona-rp.com",
+      "port": 5125,
+      "queries": [
+        {
+          "opcode": "i",
+          "request_hex": "53414d50504252a2051469",
+          "status": "timeout"
+        },
+        {
+          "opcode": "r",
+          "request_hex": "53414d50504252a2051472",
+          "status": "timeout"
+        },
+        {
+          "opcode": "p",
+          "request_hex": "53414d50504252a2051470415a3031",
+          "status": "timeout"
+        }
+      ],
+      "resolved_ipv4": "80.66.82.162"
+    },
+    {
+      "host": "mobile2.arizona-rp.com",
+      "port": 5125,
+      "queries": [
+        {
+          "opcode": "i",
+          "request_hex": "53414d5050425294051469",
+          "status": "timeout"
+        },
+        {
+          "opcode": "r",
+          "request_hex": "53414d5050425294051472",
+          "status": "timeout"
+        },
+        {
+          "opcode": "p",
+          "request_hex": "53414d5050425294051470415a3031",
+          "status": "timeout"
+        }
+      ],
+      "resolved_ipv4": "80.66.82.148"
+    },
+    {
+      "host": "mobile3.arizona-rp.com",
+      "port": 5125,
+      "queries": [
+        {
+          "opcode": "i",
+          "request_hex": "53414d5050425288051469",
+          "status": "timeout"
+        },
+        {
+          "opcode": "r",
+          "request_hex": "53414d5050425288051472",
+          "status": "timeout"
+        },
+        {
+          "opcode": "p",
+          "request_hex": "53414d5050425288051470415a3031",
+          "status": "timeout"
+        }
+      ],
+      "resolved_ipv4": "80.66.82.136"
+    },
+    {
+      "host": "prescott.arizona-rp.com",
+      "port": 7777,
+      "queries": [
+        {
+          "opcode": "i",
+          "request_hex": "53414d50b9a986a6611e69",
+          "status": "timeout"
+        },
+        {
+          "opcode": "r",
+          "request_hex": "53414d50b9a986a6611e72",
+          "status": "timeout"
+        },
+        {
+          "opcode": "p",
+          "request_hex": "53414d50b9a986a6611e70415a3031",
+          "status": "timeout"
+        }
+      ],
+      "resolved_ipv4": "185.169.134.166"
+    }
+  ]
+}
