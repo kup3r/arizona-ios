@@ -1,0 +1,22 @@
+{
+  "method": "Static ARM64 native callback analysis; game code not executed",
+  "binary_sha256": "137c9df64317cc0448d59e8b0f9ee9e737a848e48a10efeb25c793dabe6a1b1c",
+  "jni_entry": "0x7d5f40",
+  "callback": "0x7d8cf8",
+  "task_submission": "0x892be8",
+  "observed_field_widths_bits": [
+    16,
+    8,
+    16,
+    8
+  ],
+  "text_length_limit": 255,
+  "send_selector": 62,
+  "selector_address": "0x7d8ed8",
+  "send_call_address": "0x7d8ef0",
+  "send_target": "0x9827c4",
+  "reference": "https://github.com/openmultiplayer/open.mp/blob/72bf89ce4c8164f7f7b8271ffc7323bc45ea005f/Shared/NetCode/dialog.hpp",
+  "conclusion": "One recovered serialization path agrees with the standard DialogResponse structure and RPC number; full wire compatibility remains unverified",
+  "resa_immediate_62_candidates": 20,
+  "resa_candidates_semantically_confirmed": false
+}
