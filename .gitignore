@@ -1,0 +1,6 @@
+build/
+*.xcodeproj/
+Info.plist
+*.xcuserstate
+.DS_Store
+__pycache__/

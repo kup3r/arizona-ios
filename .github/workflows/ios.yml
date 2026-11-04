@@ -1,0 +1,108 @@
+name: iOS build and simulator check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare Xcode project
+        run: |
+          mkdir -p build
+          xcodebuild -version | tee build/toolchain.txt
+          if ! command -v xcodegen >/dev/null; then brew install xcodegen; fi
+          xcodegen --version | tee -a build/toolchain.txt
+          xcodegen generate
+          xcodebuild -list -project ArizonaResourceLab.xcodeproj
+
+      - name: Build unsigned iPhone application
+        run: |
+          xcodebuild -project ArizonaResourceLab.xcodeproj \
+            -scheme ArizonaResourceLab -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/device \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build/device-build.log
+          mkdir -p build/package/Payload
+          ditto build/device/Build/Products/Release-iphoneos/ArizonaResourceLab.app \
+            build/package/Payload/ArizonaResourceLab.app
+          ditto -c -k --keepParent build/package/Payload build/ArizonaResourceLab-unsigned.ipa
+
+      - name: Select iPhone simulator
+        id: simulator
+        run: |
+          xcrun simctl list devices available -j > build/simulators.json
+          DEVICE_ID=$(python3 - <<'PY'
+          import json
+          with open('build/simulators.json') as f:
+              devices = json.load(f)['devices']
+          phones = [d for runtime, ds in devices.items() if 'iOS' in runtime
+                    for d in ds if d.get('isAvailable') and d['name'].startswith('iPhone')]
+          if not phones:
+              raise SystemExit('No available iPhone simulator')
+          print(phones[0]['udid'])
+          PY
+          )
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$DEVICE_ID"
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+
+      - name: Build and test in iPhone simulator
+        run: |
+          xcodebuild -project ArizonaResourceLab.xcodeproj \
+            -scheme ArizonaResourceLab -configuration Debug \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.device_id }}' \
+            -derivedDataPath build/simulator \
+            -resultBundlePath build/UITests.xcresult \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO test 2>&1 | tee build/simulator-test.log
+
+      - name: Export simulator screenshots
+        if: always()
+        run: |
+          if [ -d build/UITests.xcresult ]; then
+            xcrun xcresulttool export attachments --path build/UITests.xcresult \
+              --output-path build/screenshots
+          fi
+
+      - name: Upload unsigned iPhone package
+        if: ${{ !cancelled() && hashFiles('build/ArizonaResourceLab-unsigned.ipa') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: iPhone-unsigned-${{ github.sha }}
+          path: build/ArizonaResourceLab-unsigned.ipa
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload build logs and simulator results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-diagnostics-${{ github.sha }}
+          path: |
+            build/*.log
+            build/toolchain.txt
+            build/UITests.xcresult
+            build/screenshots/
+          retention-days: 7
+          if-no-files-found: warn

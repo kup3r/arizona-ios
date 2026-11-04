@@ -1,0 +1,53 @@
+name: ArizonaResourceLab
+options:
+  bundleIdPrefix: local.resourcelab
+  deploymentTarget:
+    iOS: '16.0'
+targets:
+  ArizonaResourceLab:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources/mesh.json
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.resourcelab.ArizonaResourceLab
+        SWIFT_VERSION: '5.0'
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        TARGETED_DEVICE_FAMILY: '1,2'
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Resource Lab
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+  ArizonaResourceLabUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: ArizonaResourceLab
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.resourcelab.ArizonaResourceLabUITests
+        SWIFT_VERSION: '5.0'
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+schemes:
+  ArizonaResourceLab:
+    build:
+      targets:
+        ArizonaResourceLab: all
+        ArizonaResourceLabUITests: [test]
+    test:
+      targets:
+        - ArizonaResourceLabUITests
