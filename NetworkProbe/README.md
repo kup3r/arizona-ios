@@ -11,3 +11,5 @@ CI fetches the fixed revision and builds the transport plus a tiny consumer for 
 RakNet headers offer GPL-2.0-or-later; SA-MP additions and other bundled code have provenance/licensing questions documented by OpenSAMP. Successful compilation is not a licensing determination.
 
 Not checked: runtime, handshake, reliability, payload ABI, Arizona RPC extensions, client validation, entities or gameplay.
+
+Verified 2026-11-04: [Actions run 41851380428](https://github.com/kup3r/arizona-ios/actions/runs/41851380428) passed compilation/linkage, lipo architecture checks and vtool IOS/IOSSIMULATOR platform inspection using SDK 18.5 and deployment target 16.0. Upstream warnings remain in RPCMap pointer casts, legacy sprintf and the non-threadsafe build. These require review before runtime integration.
