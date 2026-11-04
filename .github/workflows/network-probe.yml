@@ -44,7 +44,7 @@ jobs:
           cmake --build build/iphone --parallel 3 2>&1 | tee build/logs/iphone-build.log
           BINARY=build/iphone/network-link-probe.app/network-link-probe
           test -f "$BINARY"
-          xcrun lipo -verify_arch arm64 "$BINARY"
+          xcrun lipo "$BINARY" -verify_arch arm64
           file "$BINARY" | tee build/logs/iphone-file.txt
           xcrun vtool -show-build "$BINARY" | tee build/logs/iphone-platform.txt
       - name: Compile and link simulator transport
@@ -58,7 +58,7 @@ jobs:
           cmake --build build/simulator --parallel 3 2>&1 | tee build/logs/simulator-build.log
           BINARY=build/simulator/network-link-probe.app/network-link-probe
           test -f "$BINARY"
-          xcrun lipo -verify_arch x86_64 "$BINARY"
+          xcrun lipo "$BINARY" -verify_arch x86_64
           file "$BINARY" | tee build/logs/simulator-file.txt
           xcrun vtool -show-build "$BINARY" | tee build/logs/simulator-platform.txt
       - name: Save portability logs
