@@ -1,0 +1,63 @@
+name: SA-MP transport iOS portability
+on:
+  push:
+    branches: [main]
+    paths: ['NetworkProbe/**', '.github/workflows/network-probe.yml']
+  pull_request:
+    paths: ['NetworkProbe/**', '.github/workflows/network-probe.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: network-probe-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compile-link:
+    runs-on: macos-15-intel
+    timeout-minutes: 12
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch fixed transport revision
+        run: |
+          mkdir -p build/logs build/upstream
+          git -C build/upstream init
+          git -C build/upstream fetch --depth 1 \
+            https://github.com/mishpro-programm/sampraknet.git \
+            e891acf76dc4b95ad4fe95b353df2879394a445c
+          git -C build/upstream checkout --detach FETCH_HEAD
+          git -C build/upstream rev-parse HEAD | tee build/logs/upstream.txt
+          xcodebuild -version | tee build/logs/toolchain.txt
+          cmake --version | tee -a build/logs/toolchain.txt
+      - name: Compile and link iPhone ARM64 transport
+        run: |
+          cmake -S NetworkProbe -B build/iphone \
+            -DRAKNET_SOURCE_DIR="$PWD/build/upstream" \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+            2>&1 | tee build/logs/iphone-configure.log
+          cmake --build build/iphone --parallel 3 2>&1 | tee build/logs/iphone-build.log
+          file build/iphone/network-link-probe | tee build/logs/iphone-file.txt
+      - name: Compile and link simulator transport
+        run: |
+          cmake -S NetworkProbe -B build/simulator \
+            -DRAKNET_SOURCE_DIR="$PWD/build/upstream" \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
+            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+            2>&1 | tee build/logs/simulator-configure.log
+          cmake --build build/simulator --parallel 3 2>&1 | tee build/logs/simulator-build.log
+          file build/simulator/network-link-probe | tee build/logs/simulator-file.txt
+      - name: Save portability logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: network-portability-${{ github.sha }}
+          path: build/logs/
+          retention-days: 7
+          if-no-files-found: warn
